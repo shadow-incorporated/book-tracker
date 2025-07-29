@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # MongoDB Database Service
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+  # Backend Server Service
+  server:
+    build:
+      context: ./server # Path to the server's Dockerfile
+      dockerfile: Dockerfile
+    container_name: server-app
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server:/app # Mounts your local server code into the container
+      - /app/node_modules # Avoids overwriting node_modules with local copy
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+    environment:
+      # Use the service name 'mongodb' as the host
+      MONGO_URI: mongodb://mongodb:27017/book-discovery-app
+      JWT_SECRET: your-super-secret-key-for-jwt
+      PORT: 5000
+
+  # Frontend Client Service
+  client:
+    build:
+      context: ./client # Path to the client's Dockerfile
+      dockerfile: Dockerfile
+    container_name: client-app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/app # Mounts your local client code into the container
+      - /app/node_modules # Avoids overwriting node_modules with local copy
+    depends_on:
+      - server
+    networks:
+      - app-network
+    stdin_open: true # Keeps the container running for React dev server
+    tty: true
+
+# Define the network
+networks:
+  app-network:
+    driver: bridge
+
+# Define the volume for persisting MongoDB data
+volumes:
+  mongo-data:
+    driver: local
