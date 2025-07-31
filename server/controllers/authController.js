@@ -81,4 +81,4 @@ const getUserProfile = expressAsyncHandler(async (req, res) => {
     }
 });
 
-module.exports = { registerUser, loginUser, getUserProfile };
+module.exports = { registerUser, loginUser, getUserProfile, generateToken };

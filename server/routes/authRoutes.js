@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser, getUserProfile } = require('../controllers/authController');
+const { registerUser, loginUser, getUserProfile, generateToken } = require('../controllers/authController');
 const { protect } = require('../middlewares/authMiddleware');
 const passport = require('passport'); 
 
@@ -37,7 +37,9 @@ router.get(
         // You might append a token as a query parameter or set it in a cookie
         // if not using traditional sessions for authentication.
         // For session-based, Passport's session handles it.
-        res.redirect('http://localhost:3000/dashboard'); // Redirect to your frontend dashboard route
+
+        const token = generateToken(req.user._id);
+        res.redirect(`http://localhost:5173/auth/success?token=${token}`); // Redirect to your frontend dashboard route
     }
 );
 
@@ -52,7 +54,7 @@ router.get('/logout', (req, res, next) => {
                 return next(err);
             }
             res.clearCookie('connect.sid'); // Clear the session cookie (default name for express-session)
-            res.redirect('http://localhost:3000/'); // Redirect to frontend homepage
+            res.redirect('http://localhost:5173/'); // Redirect to frontend homepage
         });
     });
 });
